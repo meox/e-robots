@@ -1,6 +1,12 @@
-# Erobots
+# ERobots
 
-**TODO: Add description**
+Revival of:
+http://tpoindex.github.io/crobots/docs/crobots_manual.html
+
+## Test
+
+mix test
+
 
 ## Installation
 
@@ -18,4 +24,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/erobots](https://hexdocs.pm/erobots).
-
