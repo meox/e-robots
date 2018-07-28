@@ -37,6 +37,29 @@ defmodule VM do
     %{state | stack: [x | state.stack]}
   end
 
+  # unconditional jump
+  def exec({:jump, addr}, state = %VM.State{}) do
+    %{state | ip: addr}
+  end
+
+  def exec({:jump_eq, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a == b end)
+  def exec({:jump_gt, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a > b end)
+  def exec({:jump_gte, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a >= b end)
+  def exec({:jump_lt, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a < b end)
+  def exec({:jump_lte, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a <= b end)
+
+  def exec({:jump_cond, addr}, state = %VM.State{:stack => [a, b | xs]}, f) do
+    if f.(a, b) do
+      %{state | ip: addr, stack: xs}
+    else
+      state
+    end
+  end
+
+  def exec({:call, addr, params}, state = %VM.State{}) do
+    
+  end
+
   ### math opcode
 
   def exec({:add}, state), do: exec_math_duo(state, &(&1 + &2))

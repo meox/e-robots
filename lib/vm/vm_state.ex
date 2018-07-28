@@ -6,6 +6,9 @@ defmodule VM.State do
     # current stack
     stack: [],
 
+    # message list
+    msgs: [],
+
     # valid
     valid: true,
 
