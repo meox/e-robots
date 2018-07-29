@@ -1,26 +1,6 @@
 defmodule ASM do
   @doc """
-  ByteCode generator
-
-  const
-
-  math: [add, sub, mul, div, rem, sin, cos, tan]
-
-  # stack
-
-  push
-  pop
-  ret
-  dup
-
-  # jump
-
-  je
-  jlt
-  jlte
-  jgt
-  jgte
-
+  From Assembler code generate a runnable code for the VM
   """
 
   def compile(file_name) do
