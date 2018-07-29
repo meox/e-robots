@@ -23,7 +23,7 @@ defmodule VM do
     run(code, state)
   end
 
-  ### instruction
+  ### stack
 
   def exec({:pop}, state = %VM.State{:stack => []}) do
     %{state | valid: false, desc: "pop on empty stack"}
@@ -42,22 +42,41 @@ defmodule VM do
     %{state | ip: addr}
   end
 
-  def exec({:jump_eq, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a == b end)
-  def exec({:jump_gt, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a > b end)
-  def exec({:jump_gte, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a >= b end)
-  def exec({:jump_lt, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a < b end)
-  def exec({:jump_lte, addr}, state), do: exec({:jump_cond, addr}, state, fn a, b -> a <= b end)
+  # conditional jump
+  def exec({:jump_eq, ok_addr, ko_addr}, state),
+    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a == b end)
 
-  def exec({:jump_cond, addr}, state = %VM.State{:stack => [a, b | xs]}, f) do
+  def exec({:jump_gt, ok_addr, ko_addr}, state),
+    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a > b end)
+
+  def exec({:jump_gte, ok_addr, ko_addr}, state),
+    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a >= b end)
+
+  def exec({:jump_lt, ok_addr, ko_addr}, state),
+    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a < b end)
+
+  def exec({:jump_lte, ok_addr, ko_addr}, state),
+    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a <= b end)
+
+  def exec({:jump_cond, ok_addr, ko_addr}, state = %VM.State{:stack => [a, b | xs]}, f) do
     if f.(a, b) do
-      %{state | ip: addr, stack: xs}
+      %{state | ip: ok_addr, stack: xs}
     else
-      state
+      %{state | ip: ko_addr, stack: xs}
     end
   end
 
+  # function call
   def exec({:call, addr, params}, state = %VM.State{}) do
-    
+  end
+
+  # memory
+
+  ### OS
+
+  def exec({:print}, state = %VM.State{:stack => [x | xs]}) do
+    IO.puts(x)
+    %{state | stack: xs}
   end
 
   ### math opcode

@@ -1,4 +1,4 @@
-# ERobots
+# E-Robots
 
 Revival of:
 http://tpoindex.github.io/crobots/docs/crobots_manual.html

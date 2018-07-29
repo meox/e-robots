@@ -12,6 +12,12 @@ defmodule VM.State do
     # valid
     valid: true,
 
+    # memory
+    # {region, addr} -> value
+    # the key is a region + address
+    # region = 0, means global memory
+    memory: %{},
+
     # describe the current state
     # usefull in case of error
     desc: ""
