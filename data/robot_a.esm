@@ -1,0 +1,32 @@
+# Robot A
+# assembler code
+
+/*
+ int c = 0;
+ int i = 0;
+ while (i < 10)
+ {
+     c = c + i;
+     i++;
+ }
+ return c;
+*/
+
+main:
+    STORE 0, 0  # c = 0
+    STORE 1, 0  # i = 0
+while_0:
+    PUSH 10    # push 10 into the stack
+    FETCH 1    # push the content of i into the stack
+    JLE body_0
+    JUMP exit
+body_0:
+    FETCH 0    # load c
+    FETCH 1    # load i
+    ADD
+    STORE 0    # c = c + i: store the top of the stack in c
+    FETCH 1
+    PUSH 1
+    STORE 1    # i = i + 1
+    JUMP while_0
+exit:
