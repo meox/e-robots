@@ -13,7 +13,7 @@ defmodule VM do
 
   ###
 
-  def decode(nil, _code, state), do: %{state | valid: false, desc: "bad instruction pointer"}
+  def decode(nil, _code, state), do: halt(state, "bad instruction pointer")
 
   def decode({:halt}, _code, state), do: state
 
@@ -26,7 +26,7 @@ defmodule VM do
   ### stack
 
   def exec({:pop}, state = %VM.State{:stack => []}) do
-    %{state | valid: false, desc: "pop on empty stack"}
+    halt(state, "pop on empty stack")
   end
 
   def exec({:pop}, state = %VM.State{:stack => [_ | xs]}) do
@@ -43,34 +43,39 @@ defmodule VM do
   end
 
   # conditional jump
-  def exec({:jump_eq, ok_addr, ko_addr}, state),
-    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a == b end)
+  def exec({:jump_eq, ok_addr, ko_addr}, state = %VM.State{}),
+    do: exec_jump({ok_addr, ko_addr}, state, fn a, b -> a == b end)
 
-  def exec({:jump_gt, ok_addr, ko_addr}, state),
-    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a > b end)
+  def exec({:jump_gt, ok_addr, ko_addr}, state = %VM.State{}),
+    do: exec_jump({ok_addr, ko_addr}, state, fn a, b -> a > b end)
 
-  def exec({:jump_gte, ok_addr, ko_addr}, state),
-    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a >= b end)
+  def exec({:jump_gte, ok_addr, ko_addr}, state = %VM.State{}),
+    do: exec_jump({ok_addr, ko_addr}, state, fn a, b -> a >= b end)
 
-  def exec({:jump_lt, ok_addr, ko_addr}, state),
-    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a < b end)
+  def exec({:jump_lt, ok_addr, ko_addr}, state = %VM.State{}),
+    do: exec_jump({ok_addr, ko_addr}, state, fn a, b -> a < b end)
 
-  def exec({:jump_lte, ok_addr, ko_addr}, state),
-    do: exec({:jump_cond, ok_addr, ko_addr}, state, fn a, b -> a <= b end)
+  def exec({:jump_lte, ok_addr, ko_addr}, state = %VM.State{}),
+    do: exec_jump({ok_addr, ko_addr}, state, fn a, b -> a <= b end)
 
-  def exec({:jump_cond, ok_addr, ko_addr}, state = %VM.State{:stack => [a, b | xs]}, f) do
-    if f.(a, b) do
-      %{state | ip: ok_addr, stack: xs}
-    else
-      %{state | ip: ko_addr, stack: xs}
+  # function call
+  # def exec({:call, addr, params}, state = %VM.State{}) do
+  # end
+
+  # memory
+  def exec({:fetch, region, addr}, state = %VM.State{}) do
+    case Map.get(state.memory, {region, addr}) do
+      nil ->
+        halt(state, "invalid memory address: {region: #{region}, addr: #{addr}}")
+
+      v ->
+        exec({:push, v}, state)
     end
   end
 
-  # function call
-  def exec({:call, addr, params}, state = %VM.State{}) do
+  def exec({:store, region, addr}, state = %VM.State{:stack => [x | xs]}) do
+    %{state | memory: Map.put(state.memory, {region, addr}, x), stack: xs}
   end
-
-  # memory
 
   ### OS
 
@@ -95,5 +100,19 @@ defmodule VM do
 
   def exec_math_unary(state = %VM.State{:stack => [x | xs]}, fun) do
     %{state | stack: [fun.(x) | xs]}
+  end
+
+  # private
+
+  defp exec_jump({ok_addr, ko_addr}, state = %VM.State{:stack => [a, b | xs]}, f) do
+    if f.(a, b) do
+      %{state | ip: ok_addr, stack: xs}
+    else
+      %{state | ip: ko_addr, stack: xs}
+    end
+  end
+
+  defp halt(state, reason) do
+    %{state | valid: false, desc: reason}
   end
 end

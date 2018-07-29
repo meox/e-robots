@@ -6,7 +6,8 @@ defmodule VM.Test do
       VM.run([
         {:push, 5},
         {:push, 7},
-        {:add}
+        {:add},
+        {:halt}
       ])
 
     assert state.stack == [12]
@@ -16,7 +17,8 @@ defmodule VM.Test do
     state =
       VM.run([
         {:push, 5},
-        {:pop}
+        {:pop},
+        {:halt}
       ])
 
     assert state.stack == []
@@ -25,10 +27,24 @@ defmodule VM.Test do
   test "pop empty stack" do
     state =
       VM.run([
-        {:pop}
+        {:pop},
+        {:halt}
       ])
 
     assert state.stack == []
     assert state.valid == false
+  end
+
+  test "store" do
+    state =
+      VM.run([
+        {:push, 123},
+        {:store, 1, 0},
+        {:halt}
+      ])
+
+    assert state.valid == true
+    assert state.stack == []
+    assert state.memory == %{{1, 0} => 123}
   end
 end

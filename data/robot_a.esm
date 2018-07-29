@@ -18,8 +18,7 @@ main:
 while_0:
     PUSH 10    # push 10 into the stack
     FETCH 1    # push the content of i into the stack
-    JLE body_0
-    JUMP exit
+    JLE body_0, exit
 body_0:
     FETCH 0    # load c
     FETCH 1    # load i
