@@ -3,7 +3,6 @@ defmodule ASM.Parser do
 
   space = ascii_char([?\s, ?\t])
   spaces = repeat(space)
-  spaces1 = times(space, min: 1)
 
   symbol =
     ascii_string([?a..?z, ?_], min: 1)
@@ -44,7 +43,7 @@ defmodule ASM.Parser do
   basic_type = choice([float_t, int_t, bool_t, string_t])
 
   defparsec(
-    :p_param,
+    :param,
     choice([
       symbol,
       basic_type
@@ -53,21 +52,21 @@ defmodule ASM.Parser do
 
   # parameters list
   defparsec(
-    :p_params,
-    parsec(:p_param)
+    :params,
+    parsec(:param)
     |> optional(
       repeat(
         ignore(spaces)
         |> ignore(ascii_char([?,]))
         |> ignore(spaces)
-        |> concat(parsec(:p_param))
+        |> concat(parsec(:param))
       )
     )
     |> tag(:params)
   )
 
   defparsec(
-    :p_keyword,
+    :keyword,
     choice([
       string("STORE"),
       string("FETCH"),
@@ -92,14 +91,14 @@ defmodule ASM.Parser do
   )
 
   defparsec(
-    :p_label,
+    :label,
     symbol
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:label)
   )
 
   defparsec(
-    :p_comment,
+    :comment,
     ignore(ascii_char([?#]))
     |> ignore(
       repeat_while(
@@ -110,24 +109,24 @@ defmodule ASM.Parser do
   )
 
   defparsec(
-    :p_inst,
-    optional(parsec(:p_label))
+    :instruction,
+    optional(parsec(:label))
     |> optional(ignore(ascii_char([?\n])))
     |> ignore(spaces)
-    |> concat(parsec(:p_keyword))
+    |> concat(parsec(:keyword))
     |> ignore(spaces)
-    |> concat(optional(parsec(:p_params)))
+    |> concat(optional(parsec(:params)))
     |> ignore(spaces)
-    |> optional(parsec(:p_comment))
-    |> tag(:instruction)
+    |> optional(parsec(:comment))
+    |> tag(:op)
   )
 
   defparsec(
     :program,
     repeat(
       choice([
-        parsec(:p_comment),
-        parsec(:p_inst)
+        parsec(:comment),
+        parsec(:instruction)
       ])
       |> ignore(repeat(ascii_char([?\n])))
     )
