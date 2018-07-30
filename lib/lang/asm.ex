@@ -3,6 +3,8 @@ defmodule ASM do
   From Assembler code generate a runnable code for the VM
   """
 
+  alias ASM.Parser
+
   def compile(file_name) do
     case File.read(file_name) do
       {:ok, content} ->
@@ -11,14 +13,15 @@ defmodule ASM do
         |> generate()
 
       {:error, msg} ->
-        nil
+        IO.puts("error: #{msg}")
     end
   end
 
   defp parse(content) do
+    Parser.program(content)
   end
 
   defp generate(ast) do
-    <<0>>
+    ast
   end
 end

@@ -2,7 +2,7 @@ defmodule ASM.Parser do
 
   import NimbleParsec
 
-  space = ascii_char([?\s, ?\t, ?\r, ?\n])
+  space = ascii_char([?\s, ?\t])
   spaces = repeat(space)
   spaces1 = times(space, min: 1)
 
@@ -44,15 +44,21 @@ defmodule ASM.Parser do
 
   basic_type = choice([float_t, int_t, bool_t, string_t])
 
+  defparsec :p_param,
+    choice([
+      symbol,
+      basic_type
+    ])
+
   # parameters list
   defparsec :p_params,
-    basic_type
+    parsec(:p_param)
     |> optional(
       repeat(
         ignore(spaces)
         |> ignore(ascii_char([?,]))
         |> ignore(spaces)
-        |> concat(basic_type)
+        |> concat(parsec(:p_param))
       )
     )
     |> tag(:params)
@@ -76,7 +82,8 @@ defmodule ASM.Parser do
       string("REM"),
       string("SIN"),
       string("COS"),
-      string("TAN")
+      string("TAN"),
+      string("HALT")
     ])
     |> unwrap_and_tag(:keyword)
 
@@ -93,8 +100,6 @@ defmodule ASM.Parser do
       utf8_char([]),
       {:not_endline, []}
     ))
-    |> optional(ascii_char([?\n]))
-
 
   defparsec :p_inst,
     optional(parsec(:p_label))
@@ -108,7 +113,13 @@ defmodule ASM.Parser do
     |> tag(:instruction)
 
   defparsec :program,
-    repeat(parsec(:p_inst))
+    repeat(
+      choice([
+        parsec(:p_comment),
+        parsec(:p_inst),
+      ])
+      |> ignore(repeat(ascii_char([?\n])))
+    )
 
   ### PRIVATE
 
