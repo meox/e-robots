@@ -3,7 +3,7 @@ defmodule ASM do
   From Assembler code generate a runnable code for the VM
   """
 
-  alias ASM.Parser
+  alias ASM.{Parser, Generator}
 
   def compile(file_name) do
     case File.read(file_name) do
@@ -21,7 +21,12 @@ defmodule ASM do
     Parser.program(content)
   end
 
+  defp generate({:ok, vm_code, _, _, _, _}) do
+    Generator.generate(vm_code)
+  end
+
   defp generate(ast) do
-    ast
+    IO.puts("Error compiling assembler")
+    IO.inspect(ast)
   end
 end
