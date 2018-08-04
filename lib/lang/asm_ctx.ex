@@ -4,6 +4,8 @@ defmodule ASM.CTX do
     labels: %{},
     line: 0,
     memory_region: 0,
+    vars: %{},
+    index_var: 0,
     error: false
   )
 end

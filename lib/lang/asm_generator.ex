@@ -26,6 +26,7 @@ defmodule ASM.Generator do
   end
   
   defp decode(ctx, %{:keyword => "FETCH", :params => [addr]}) do
+    {ctx, addr} = assign_var(ctx, addr)
     {ctx, {:fetch, ctx.memory_region, addr}}
   end
 
@@ -33,12 +34,25 @@ defmodule ASM.Generator do
     {ctx, {:push, e}}
   end
 
+  defp decode(ctx, %{:keyword => "POP"}), do: {ctx, {:pop}}
+
   defp decode(ctx, %{:keyword => "HALT"}), do: {ctx, {:halt}}
+
+  ### JUMP
+  
+  defp decode(ctx, %{:keyword => "JUMP", :params => [label_name]}) do
+    {ctx, {:jump, Map.get(ctx.labels, label_name)}}
+  end
+
+  ### MATH
 
   defp decode(ctx, %{:keyword => "ADD"}), do: {ctx, {:add}}
   defp decode(ctx, %{:keyword => "MUL"}), do: {ctx, {:mul}}
   defp decode(ctx, %{:keyword => "DIV"}), do: {ctx, {:div}}
-
+  defp decode(ctx, %{:keyword => "REM"}), do: {ctx, {:rem}}
+  defp decode(ctx, %{:keyword => "SIN"}), do: {ctx, {:sin}}
+  defp decode(ctx, %{:keyword => "COS"}), do: {ctx, {:cos}}
+  defp decode(ctx, %{:keyword => "TAN"}), do: {ctx, {:tan}}
 
   defp decode(ctx, instruction) do
     {ctx, instruction}
@@ -58,6 +72,7 @@ defmodule ASM.Generator do
   ### Gen
 
   defp gen_store([addr, val], ctx) do
+    {ctx, addr} = assign_var(ctx, addr)
     {
       ctx,
       [
@@ -68,6 +83,21 @@ defmodule ASM.Generator do
   end
 
   defp gen_store([addr], ctx) do
+    {ctx, addr} = assign_var(ctx, addr)
     {ctx, {:store, ctx.memory_region, addr}}
+  end
+
+  ###
+  
+  defp assign_var(ctx, addr) when is_number(addr), do: {ctx, addr}
+  defp assign_var(ctx, addr) when is_bitstring(addr) do
+    case Map.get(ctx.vars, addr) do
+      nil ->
+        index = ctx.index_var
+        ctx = %{ctx | index_var: index + 1, vars: Map.put(ctx.vars, addr, index)}
+        {ctx, index}
+      v ->
+        {ctx, v}
+    end
   end
 end

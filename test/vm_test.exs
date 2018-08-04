@@ -39,13 +39,13 @@ defmodule VM.Test do
     state =
       VM.run([
         {:push, 123},
-        {:store, 1, 0},
+        {:store, 1, "a"},
         {:halt}
       ])
 
     assert state.valid == true
     assert state.stack == []
-    assert state.memory == %{{1, 0} => 123}
+    assert state.memory == %{{1, "a"} => 123}
   end
 
   test "store & fetch" do
