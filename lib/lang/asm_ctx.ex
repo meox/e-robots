@@ -1,4 +1,4 @@
-defmodule ASM.GenCTX do
+defmodule ASM.CTX do
   defstruct(
     code: [],
     labels: %{},
