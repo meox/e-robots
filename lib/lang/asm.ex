@@ -17,6 +17,8 @@ defmodule ASM do
     end
   end
 
+  ### PRIVATE
+
   defp parse(content) do
     Parser.program(content)
   end
